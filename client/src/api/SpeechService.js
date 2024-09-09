@@ -17,8 +17,6 @@ const getTranscriptFromSpeech = async (audioUri) => {
 };
 
 const uploadSpeech = async (audioBlob) => {
-  console.log('process.env.REACT_APP_API_URL', process.env.REACT_APP_API_URL);
-
   const formData = new FormData();
   const now = new Date();
   const timestamp = now
