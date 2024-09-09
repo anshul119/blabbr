@@ -11,7 +11,7 @@ const app = express();
 app.use(cors());
 app.use(express.json({ limit: '50mb' })); // Adjust limit as needed
 
-const port = 2000;
+const port = 4000;
 
 // Initialize GCP storage
 const storage = new Storage({
@@ -83,7 +83,6 @@ app.post('/api/generate-blog', async (req, res) => {
       temperature: 0.7,
     });
 
-    console.dir(response);
     const blogPost = response.choices[0].message.content.trim();
     res.json({ blogPost });
   } catch (error) {
@@ -125,6 +124,6 @@ app.post('/api/upload-audio', upload.single('audio'), async (req, res) => {
   }
 });
 
-app.listen(port, () => {
-  console.log('Server is running');
+app.listen(port, '0.0.0.0', () => {
+  console.log(`Server running on http://0.0.0.0:${port}`);
 });

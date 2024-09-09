@@ -6,7 +6,7 @@ const generateBlogFromTranscript = async (rawText) => {
       `${process.env.REACT_APP_API_URL}/api/generate-blog`,
       { rawText }
     );
-    return response.data.choices[0].text;
+    return response.data.blogPost;
   } catch (error) {
     console.error('Error generating blog post:', error);
   }
