@@ -1,16 +1,29 @@
 version: '3'
 services:
+  db:
+    image: postgres:13
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
+      - POSTGRES_DB=blabbr
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
   server:
     build: ./server
     ports:
       - '4000:4000'
     env_file:
-      - .env
+      - ./server/.env
 
     volumes:
       - ./server:/usr/src/app
       - /usr/src/app/node_modules
       - /Users/anshulsharma/projects/blabbr-sa.json:/usr/src/app/blabbr-sa.json:ro
+    depends_on:
+      - db
 
   client:
     build: ./client
@@ -18,3 +31,6 @@ services:
       - '3000:80'
     depends_on:
       - server
+
+volumes:
+  postgres_data:

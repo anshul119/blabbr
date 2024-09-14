@@ -2,7 +2,7 @@
 FROM node:20
 
 # Set the working directory in the container
-WORKDIR /usr/src/app
+WORKDIR /usr/src/client
 
 # Copy package.json and package-lock.json
 COPY package*.json ./
@@ -20,7 +20,7 @@ RUN npm run build
 FROM nginx:stable-alpine
 
 # Copy the build output to replace the default nginx contents.
-COPY --from=0 /usr/src/app/build /usr/share/nginx/html
+COPY --from=0 /usr/src/client/build /usr/share/nginx/html
 
 # Expose port 80
 EXPOSE 80

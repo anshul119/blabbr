@@ -1,6 +1,9 @@
 const express = require('express');
 require('dotenv').config();
 const cors = require('cors');
+const { Pool } = require('pg');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 const path = require('path');
 const multer = require('multer');
 const { SpeechClient } = require('@google-cloud/speech');
@@ -12,6 +15,98 @@ app.use(cors());
 app.use(express.json({ limit: '50mb' })); // Adjust limit as needed
 
 const port = 4000;
+
+// Initialize PostgreSQL connection pool
+const pool = new Pool({
+  connectionString: process.env.DB_CONNECTION_STRING
+});
+
+// Function to wait for database connection
+const waitForDatabase = async () => {
+  while (true) {
+    try {
+      await pool.query('SELECT 1');
+      console.log('Database connected');
+      break;
+    } catch (err) {
+      console.log('Waiting for database...');
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+    }
+  }
+};
+
+// Create the users table if it doesn't exist
+const createUsersTable = async () => {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS users (
+      id SERIAL PRIMARY KEY,
+      username TEXT UNIQUE NOT NULL,
+      email TEXT UNIQUE NOT NULL,
+      password TEXT NOT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+  console.log('Users table created or already exists');
+};
+
+// Registration endpoint
+app.post('/api/register', async (req, res) => {
+  try {
+    const { username, email, password } = req.body;
+
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Insert the new user into the database
+    const result = await pool.query(
+      'INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING id',
+      [username, email, hashedPassword]
+    );
+
+    res.status(201).json({
+      message: 'User registered successfully',
+      userId: result.rows[0].id,
+    });
+  } catch (error) {
+    console.error('Registration error:', error);
+    res.status(500).json({ error: 'Registration failed' });
+  }
+});
+
+// Login endpoint
+app.post('/api/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    // Find the user by email
+    const result = await pool.query('SELECT * FROM users WHERE email = $1', [
+      email,
+    ]);
+
+    if (result.rows.length === 0) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+
+    const user = result.rows[0];
+
+    // Compare the provided password with the stored hash
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+
+    if (!isPasswordValid) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+
+    // Generate a JWT token
+    const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, {
+      expiresIn: '1h',
+    });
+
+    res.json({ message: 'Login successful', token });
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).json({ error: 'Login failed' });
+  }
+});
 
 // Initialize GCP storage
 const storage = new Storage({
@@ -124,6 +219,14 @@ app.post('/api/upload-audio', upload.single('audio'), async (req, res) => {
   }
 });
 
-app.listen(port, '0.0.0.0', () => {
-  console.log(`Server running on http://0.0.0.0:${port}`);
-});
+// Start the server after database is ready
+const startServer = async () => {
+  await waitForDatabase();
+  await createUsersTable();
+
+  app.listen(port, '0.0.0.0', () => {
+    console.log(`Server running on http://0.0.0.0:${port}`);
+  });
+};
+
+startServer();
