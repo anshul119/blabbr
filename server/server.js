@@ -18,7 +18,7 @@ const port = 4000;
 
 // Initialize PostgreSQL connection pool
 const pool = new Pool({
-  connectionString: process.env.DB_CONNECTION_STRING
+  connectionString: process.env.DB_CONNECTION_STRING,
 });
 
 // Function to wait for database connection
@@ -76,15 +76,15 @@ app.post('/api/register', async (req, res) => {
 // Login endpoint
 app.post('/api/login', async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { username, password } = req.body;
 
-    // Find the user by email
-    const result = await pool.query('SELECT * FROM users WHERE email = $1', [
-      email,
+    // Find the user by username
+    const result = await pool.query('SELECT * FROM users WHERE username = $1', [
+      username,
     ]);
 
     if (result.rows.length === 0) {
-      return res.status(401).json({ error: 'Invalid credentials' });
+      return res.status(401).json({ error: 'User is not registered' });
     }
 
     const user = result.rows[0];
@@ -93,7 +93,7 @@ app.post('/api/login', async (req, res) => {
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (!isPasswordValid) {
-      return res.status(401).json({ error: 'Invalid credentials' });
+      return res.status(401).json({ error: 'Your password is incorrect' });
     }
 
     // Generate a JWT token

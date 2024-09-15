@@ -7,9 +7,8 @@ import {
   SkeletonText,
   VStack,
 } from '@chakra-ui/react';
-import { getTranscriptFromSpeech, uploadSpeech } from './api/SpeechService.js';
-import { generateBlogFromTranscript } from './api/BlogService.js';
-import { convertBlobToBase64 } from './Utils.js';
+import { getTranscriptFromSpeech, uploadSpeech } from '../api/SpeechService.js';
+import { generateBlogFromTranscript } from '../api/BlogService.js';
 
 const AudioRecorder = () => {
   const [audioUrl, setAudioUrl] = useState('');
@@ -70,7 +69,11 @@ const AudioRecorder = () => {
   };
 
   const ConvertToBlog = async () => {
+    setCurating(true);
     const blog = await generateBlogFromTranscript(transcript);
+    if (blog) {
+      setCurating(false);
+    }
     setBlogPost(blog);
   };
 

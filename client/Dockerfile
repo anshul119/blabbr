@@ -13,17 +13,11 @@ RUN npm ci
 # Copy the current directory contents into the container
 COPY . .
 
-# Build the app
-RUN npm run build
+# Expose the port React runs on
+EXPOSE 3000
 
-# Production stage
-FROM nginx:stable-alpine
+# Set environment to development
+ENV NODE_ENV=development
 
-# Copy the build output to replace the default nginx contents.
-COPY --from=0 /usr/src/client/build /usr/share/nginx/html
-
-# Expose port 80
-EXPOSE 80
-
-# Start Nginx server
-CMD ["nginx", "-g", "daemon off;"]
+# Start the development server
+CMD ["npm", "start"]

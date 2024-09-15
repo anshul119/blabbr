@@ -1,27 +1,26 @@
 import './App.css';
-import {
-  ChakraProvider,
-  Heading,
-  Box,
-  Container,
-  Center,
-} from '@chakra-ui/react';
-import AudioRecorder from './AudioRecorder';
+import { ChakraProvider, Container } from '@chakra-ui/react';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import Home from './pages/Home';
+import AudioRecorder from './pages/AudioRecorder';
+import Login from './pages/Login';
+import Register from './pages/Register';
 
 function App() {
   return (
     <ChakraProvider>
-      <div className="App">
-        <Container>
-          <Heading mt={10} mb={1} textAlign="center">
-            Welcome to Blabbr 📣
-          </Heading>
-          <Box mb={10} textAlign={'center'}>
-            From raw thoughts ⚙️ to captivating blog posts 🎯
-          </Box>
-          <AudioRecorder />
-        </Container>
-      </div>
+      <Router>
+        <div className="App">
+          <Container>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/record" element={<AudioRecorder />} />
+            </Routes>
+          </Container>
+        </div>
+      </Router>
     </ChakraProvider>
   );
 }
