@@ -79,7 +79,7 @@ const AudioRecorder = () => {
 
   return (
     <>
-      <VStack>
+      <VStack mt="50px">
         <audio controls src={audioUrl}></audio>
         <HStack my={4} spacing={4} direction="row" align="center">
           <Button

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Button,
@@ -9,8 +10,12 @@ import {
   Heading,
 } from '@chakra-ui/react';
 import { loginUser } from '../api/UserService';
+import { useDispatch } from 'react-redux';
+import { setToken } from '../store/authSlice';
 
 const LoginForm = () => {
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
@@ -18,9 +23,8 @@ const LoginForm = () => {
     e.preventDefault();
     try {
       const result = await loginUser({ username, password });
-      console.log('Login successful:', result);
-      // Handle successful login (e.g., store token, redirect)
-      localStorage.setItem('token', result.token);
+      dispatch(setToken(result.token));
+      navigate('/record');
     } catch (error) {
       console.error('Login error:', error.message);
       // Handle login error (e.g., show error message)

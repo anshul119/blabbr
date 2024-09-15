@@ -19,7 +19,6 @@ services:
       - ./server/.env
     volumes:
       - ./server:/usr/src/app
-      - /usr/src/app/node_modules
       - /Users/anshulsharma/projects/blabbr-sa.json:/usr/src/app/blabbr-sa.json:ro
     stdin_open: true
     tty: true
@@ -32,7 +31,6 @@ services:
       - '3000:3000'
     volumes:
       - ./client:/usr/src/client
-      - /usr/src/client/node_modules
     env_file:
       - ./client/.env
     stdin_open: true
