@@ -21,34 +21,6 @@ const pool = new Pool({
   connectionString: process.env.DB_CONNECTION_STRING,
 });
 
-// Function to wait for database connection
-const waitForDatabase = async () => {
-  while (true) {
-    try {
-      await pool.query('SELECT 1');
-      console.log('Database connected');
-      break;
-    } catch (err) {
-      console.log('Waiting for database...');
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-    }
-  }
-};
-
-// Create the users table if it doesn't exist
-const createUsersTable = async () => {
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS users (
-      id SERIAL PRIMARY KEY,
-      username TEXT UNIQUE NOT NULL,
-      email TEXT UNIQUE NOT NULL,
-      password TEXT NOT NULL,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )
-  `);
-  console.log('Users table created or already exists');
-};
-
 // Registration endpoint
 app.post('/api/register', async (req, res) => {
   try {
@@ -221,9 +193,6 @@ app.post('/api/upload-audio', upload.single('audio'), async (req, res) => {
 
 // Start the server after database is ready
 const startServer = async () => {
-  await waitForDatabase();
-  await createUsersTable();
-
   app.listen(port, '0.0.0.0', () => {
     console.log(`Server running on http://0.0.0.0:${port}`);
   });

@@ -16,5 +16,5 @@ COPY . .
 # Make port 4000 available to the world outside this container
 EXPOSE 4000
 
-# Run the app when the container launches
-CMD ["npm", "start"]
+# Run DB migrations and start the app when the container launches
+CMD ["sh", "-c", "npx knex migrate:latest && npm start"]
