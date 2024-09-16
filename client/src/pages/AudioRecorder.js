@@ -8,7 +8,7 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import { getTranscriptFromSpeech, uploadSpeech } from '../api/SpeechService.js';
-import { generateBlogFromTranscript } from '../api/BlogService.js';
+import { generateStoryFromTranscript } from '../api/StoryService.js';
 
 const AudioRecorder = () => {
   const [audioUrl, setAudioUrl] = useState('');
@@ -17,7 +17,7 @@ const AudioRecorder = () => {
   const [transcript, setTranscript] = useState('');
   const [transcribing, setTranscribing] = useState(false);
   const [curating, setCurating] = useState(false);
-  const [blogPost, setBlogPost] = useState('');
+  const [story, setStory] = useState('');
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
 
@@ -68,13 +68,13 @@ const AudioRecorder = () => {
     setRecording(false);
   };
 
-  const ConvertToBlog = async () => {
+  const generateStory = async () => {
     setCurating(true);
-    const blog = await generateBlogFromTranscript(transcript);
-    if (blog) {
+    const story = await generateStoryFromTranscript(transcript);
+    if (story) {
       setCurating(false);
     }
-    setBlogPost(blog);
+    setStory(story);
   };
 
   return (
@@ -124,7 +124,7 @@ const AudioRecorder = () => {
       </Box>
       <Button
         colorScheme="blue"
-        onClick={ConvertToBlog}
+        onClick={generateStory}
         isDisabled={!transcript}
         my={4}
       >
@@ -134,7 +134,7 @@ const AudioRecorder = () => {
         <Heading as="h4" size="md" mb={1}>
           {curating ? (
             <>👨‍🎨 Thoguhts are churning...</>
-          ) : blogPost ? (
+          ) : story ? (
             <>💎 I've ironed it out</>
           ) : (
             <>💡 I will synthesize your thoughts</>
@@ -143,7 +143,7 @@ const AudioRecorder = () => {
         {curating ? (
           <SkeletonText mt="4" noOfLines={4} spacing="4" skeletonHeight="2" />
         ) : (
-          blogPost
+          story
         )}
       </Box>
     </>

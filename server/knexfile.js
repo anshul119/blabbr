@@ -3,7 +3,13 @@ require('dotenv').config();
 module.exports = {
   development: {
     client: 'postgresql',
-    connection: process.env.DB_CONNECTION_STRING,
+    connection: {
+      host: '0.0.0.0',
+      port: 5432,
+      database: 'blabbr',
+      user: 'root',
+      password: 'root',
+    },
     migrations: {
       directory: './migrations',
     },

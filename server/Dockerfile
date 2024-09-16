@@ -16,5 +16,9 @@ COPY . .
 # Make port 4000 available to the world outside this container
 EXPOSE 4000
 
+# Add wait-for-it script
+ADD https://github.com/vishnubob/wait-for-it/raw/master/wait-for-it.sh /usr/wait-for-it.sh
+RUN chmod +x /usr/wait-for-it.sh
+
 # Run DB migrations and start the app when the container launches
-CMD ["sh", "-c", "npx knex migrate:latest && npm start"]
+CMD ["/usr/wait-for-it.sh", "db:5432", "--", "npm", "run", "dev"]
