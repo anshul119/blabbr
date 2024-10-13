@@ -8,8 +8,63 @@ const openai = new OpenAI({
   apiKey: process.env['OPENAI_API_KEY'],
 });
 
+router.post('/', async (req, res) => {
+  try {
+    const { url, transcript, story } = req.body;
+    const [id] = await knex('stories').insert({ url, transcript, story });
+    res.status(201).json({ id, url, transcript, story });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.get('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const story = await knex('stories').where({ id }).first();
+    if (story) {
+      res.json(story);
+    } else {
+      res.status(404).json({ error: 'Story not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.put('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { url, transcript, story } = req.body;
+    const updated = await knex('stories')
+      .where({ id })
+      .update({ url, transcript, story });
+    if (updated) {
+      res.json({ id, url, transcript, story });
+    } else {
+      res.status(404).json({ error: 'Story not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.delete('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const deleted = await knex('stories').where({ id }).del();
+    if (deleted) {
+      res.json({ message: 'Story deleted successfully' });
+    } else {
+      res.status(404).json({ error: 'Story not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Generate story endpoint
-router.post('/generate-story', async (req, res) => {
+router.post('/generate', async (req, res) => {
   const { rawText } = req.body;
 
   try {

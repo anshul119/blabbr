@@ -31,7 +31,7 @@ pool.connect((err) => {
 // Use routes
 app.use('/api', authRoutes);
 app.use('/api', audioRoutes);
-app.use('/api', storyRoutes);
+app.use('/api/stories', storyRoutes);
 
 // Start the server after database is ready
 const startServer = async () => {

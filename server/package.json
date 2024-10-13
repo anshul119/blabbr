@@ -5,8 +5,7 @@
   "main": "server.js",
   "scripts": {
     "migrate": "knex migrate:latest",
-    "start": "node server.js",
-    "dev": "npm run migrate && npm start"
+    "dev": "nodemon server.js"
   },
   "keywords": [],
   "author": "",

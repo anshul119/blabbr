@@ -21,4 +21,4 @@ ADD https://github.com/vishnubob/wait-for-it/raw/master/wait-for-it.sh /usr/wait
 RUN chmod +x /usr/wait-for-it.sh
 
 # Run DB migrations and start the app when the container launches
-CMD ["/usr/wait-for-it.sh", "db:5432", "--", "npm", "run", "dev"]
+CMD /usr/wait-for-it.sh db:5432 -t 30 -- sh -c "sleep 10 && npm run dev"
