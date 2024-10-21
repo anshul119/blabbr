@@ -2,6 +2,5 @@
     "watch": ["."],
     "ext": "js,json",
     "ignore": ["node_modules"],
-    "exec": "node server.js",
-    "legacyWatch": true
+    "exec": "node server.js"
   }

@@ -8,6 +8,8 @@ import {
   Input,
   Stack,
   Heading,
+  Alert,
+  AlertIcon,
 } from '@chakra-ui/react';
 import { loginUser } from '../api/UserService';
 import { useDispatch } from 'react-redux';
@@ -18,16 +20,18 @@ const LoginForm = () => {
   const dispatch = useDispatch();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setError(''); // Clear any previous errors
     try {
       const result = await loginUser({ username, password });
       dispatch(setToken(result.token));
       navigate('/record');
     } catch (error) {
       console.error('Login error:', error.message);
-      // Handle login error (e.g., show error message)
+      setError(error.message || 'An error occurred during login');
     }
   };
 
@@ -44,6 +48,12 @@ const LoginForm = () => {
       <Heading as="h3" size="lg" textAlign="center" mb={6}>
         Login
       </Heading>
+      {error && (
+        <Alert status="error" mb={4}>
+          <AlertIcon />
+          {error}
+        </Alert>
+      )}
       <form onSubmit={handleLogin}>
         <Stack spacing={4}>
           <FormControl id="username" isRequired>

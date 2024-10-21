@@ -7,23 +7,28 @@ import {
   Input,
   Stack,
   Heading,
+  Alert,
+  AlertIcon,
 } from '@chakra-ui/react';
 import { registerUser } from '../api/UserService';
+
 const RegisterForm = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [email, setEmail] = useState('');
+  const [error, setError] = useState('');
 
   // Usage in a React component
   const handleRegistration = async (e) => {
     e.preventDefault();
+    setError(''); // Clear any previous errors
     try {
       const result = await registerUser({ username, email, password });
       console.log('Registration successful:', result);
       // Handle successful registration (e.g., show success message, redirect)
     } catch (error) {
       console.error('Registration error:', error.message);
-      // Handle registration error (e.g., show error message)
+      setError(error.message || 'An error occurred during registration');
     }
   };
 
@@ -40,6 +45,12 @@ const RegisterForm = () => {
       <Heading as="h3" size="lg" textAlign="center" mb={6}>
         Register
       </Heading>
+      {error && (
+        <Alert status="error" mb={4}>
+          <AlertIcon />
+          {error}
+        </Alert>
+      )}
       <form onSubmit={handleRegistration}>
         <Stack spacing={4}>
           <FormControl id="username" isRequired>
