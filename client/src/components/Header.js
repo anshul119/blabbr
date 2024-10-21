@@ -24,6 +24,9 @@ const Header = ({ isLoggedIn, onLogout }) => {
         <Box>
           {isLoggedIn ? (
             <>
+              <Button as={Link} to="/stories" mr={2}>
+                My Stories
+              </Button>
               <Button as={Link} to="/record" mr={2}>
                 Record
               </Button>

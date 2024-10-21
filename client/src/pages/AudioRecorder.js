@@ -9,6 +9,7 @@ import {
 } from '@chakra-ui/react';
 import { getTranscriptFromSpeech, uploadSpeech } from '../api/SpeechService.js';
 import { generateStoryFromTranscript } from '../api/StoryService.js';
+import { createStory } from '../api/StoryService.js';
 
 const AudioRecorder = () => {
   const [audioUrl, setAudioUrl] = useState('');
@@ -20,6 +21,13 @@ const AudioRecorder = () => {
   const [story, setStory] = useState('');
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
+  const [savingStory, setSavingStory] = useState(false);
+
+  const saveStory = async () => {
+    setSavingStory(true);
+    await createStory(audioUrl, transcript, story);
+    setSavingStory(false);
+  };
 
   const startRecording = async () => {
     setRecording(true);
@@ -146,6 +154,9 @@ const AudioRecorder = () => {
           story
         )}
       </Box>
+      <Button colorScheme="blue" onClick={saveStory} isDisabled={!story} my={4}>
+        {savingStory ? '💾 Saving...' : '📝 Save my story'}
+      </Button>
     </>
   );
 };

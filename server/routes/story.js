@@ -1,6 +1,7 @@
 const express = require('express');
 const OpenAI = require('openai');
 const authMiddleware = require('../middleware/auth');
+const db = require('../db');
 
 const router = express.Router();
 
@@ -13,12 +14,10 @@ router.post('/', authMiddleware, async (req, res) => {
   try {
     const { url, transcript, story } = req.body;
     const userId = req.user.userId; // Assuming authMiddleware adds user info to req
-    const [id] = await knex('stories').insert({
-      url,
-      transcript,
-      story,
-      user_id: userId,
-    });
+    const [id] = await db.query(
+      'INSERT INTO stories (url, transcript, story, user_id) VALUES ($1, $2, $3, $4) RETURNING id',
+      [url, transcript, story, userId]
+    );
     res.status(201).json({ id, url, transcript, story });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -29,7 +28,10 @@ router.get('/:id', authMiddleware, async (req, res) => {
   try {
     const { id } = req.params;
     const userId = req.user.userId;
-    const story = await knex('stories').where({ id, user_id: userId }).first();
+    const story = await db.query(
+      'SELECT * FROM stories WHERE id = $1 AND user_id = $2',
+      [id, userId]
+    );
     if (story) {
       res.json(story);
     } else {
@@ -45,9 +47,10 @@ router.put('/:id', authMiddleware, async (req, res) => {
     const { id } = req.params;
     const userId = req.user.userId;
     const { url, transcript, story } = req.body;
-    const updated = await knex('stories')
-      .where({ id, user_id: userId })
-      .update({ url, transcript, story });
+    const updated = await db.query(
+      'UPDATE stories SET url = $1, transcript = $2, story = $3 WHERE id = $4 AND user_id = $5',
+      [url, transcript, story, id, userId]
+    );
     if (updated) {
       res.json({ id, url, transcript, story });
     } else {
@@ -62,7 +65,10 @@ router.delete('/:id', authMiddleware, async (req, res) => {
   try {
     const { id } = req.params;
     const userId = req.user.userId;
-    const deleted = await knex('stories').where({ id, user_id: userId }).del();
+    const deleted = await db.query(
+      'DELETE FROM stories WHERE id = $1 AND user_id = $2',
+      [id, userId]
+    );
     if (deleted) {
       res.json({ message: 'Story deleted successfully' });
     } else {
@@ -77,8 +83,10 @@ router.delete('/:id', authMiddleware, async (req, res) => {
 router.get('/', authMiddleware, async (req, res) => {
   try {
     const userId = req.user.userId;
-    const stories = await knex('stories').where({ user_id: userId });
-    res.json(stories);
+    const stories = await db.query('SELECT * FROM stories WHERE user_id = $1', [
+      userId,
+    ]);
+    res.json(stories.rows);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

@@ -11,8 +11,9 @@ import Home from './pages/Home';
 import AudioRecorder from './pages/AudioRecorder';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import Stories from './pages/Stories';
 import Header from './components/Header';
-import { selectIsAuthenticated, logout } from './store/authSlice';
+import { selectIsAuthenticated } from './store/authSlice';
 
 function App() {
   const isAuthenticated = useSelector(selectIsAuthenticated);
@@ -39,6 +40,14 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <AudioRecorder />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/stories"
+                element={
+                  <ProtectedRoute>
+                    <Stories />
                   </ProtectedRoute>
                 }
               />

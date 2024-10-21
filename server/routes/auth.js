@@ -1,12 +1,9 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const { Pool } = require('pg');
+const db = require('../db');
 
 const router = express.Router();
-const pool = new Pool({
-  connectionString: process.env.DB_CONNECTION_STRING,
-});
 
 // Registration endpoint
 router.post('/register', async (req, res) => {
@@ -14,7 +11,7 @@ router.post('/register', async (req, res) => {
     const { username, email, password } = req.body;
 
     // Check if username or email already exists
-    const existingUser = await pool.query(
+    const existingUser = await db.query(
       'SELECT * FROM users WHERE username = $1 OR email = $2',
       [username, email]
     );
@@ -29,7 +26,7 @@ router.post('/register', async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Insert the new user into the database
-    const result = await pool.query(
+    const result = await db.query(
       'INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING id',
       [username, email, hashedPassword]
     );
@@ -50,7 +47,7 @@ router.post('/login', async (req, res) => {
     const { username, password } = req.body;
 
     // Find the user by username
-    const result = await pool.query('SELECT * FROM users WHERE username = $1', [
+    const result = await db.query('SELECT * FROM users WHERE username = $1', [
       username,
     ]);
 
