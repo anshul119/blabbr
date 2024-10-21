@@ -1,8 +1,9 @@
 import axios from 'axios';
+import ApiCleint from './Auth';
 
 const getTranscriptFromSpeech = async (audioUri) => {
-  const response = await axios.post(
-    `${process.env.REACT_APP_API_URL}/api/transcribe`,
+  const response = await ApiCleint.post(
+    `transcribe`,
     {
       audioUri,
     },
@@ -27,15 +28,11 @@ const uploadSpeech = async (audioBlob) => {
   formData.append('audio', audioBlob, `audio_${timestamp}.webm`);
 
   // Use axios to send the audio blob to the backend
-  const response = await axios.post(
-    `${process.env.REACT_APP_API_URL}/api/upload-audio`,
-    formData,
-    {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    }
-  );
+  const response = await ApiCleint.post(`upload-audio`, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
 
   return response.data.url;
 };

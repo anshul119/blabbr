@@ -9,6 +9,7 @@ import {
   Heading,
   Alert,
   AlertIcon,
+  useToast,
 } from '@chakra-ui/react';
 import { registerUser } from '../api/UserService';
 
@@ -17,6 +18,7 @@ const RegisterForm = () => {
   const [password, setPassword] = useState('');
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
+  const toast = useToast();
 
   // Usage in a React component
   const handleRegistration = async (e) => {
@@ -25,6 +27,15 @@ const RegisterForm = () => {
     try {
       const result = await registerUser({ username, email, password });
       console.log('Registration successful:', result);
+      toast({
+        title: 'Registration successful',
+        status: 'success',
+        duration: 5000,
+        isClosable: true,
+      });
+      setUsername('');
+      setPassword('');
+      setEmail('');
       // Handle successful registration (e.g., show success message, redirect)
     } catch (error) {
       console.error('Registration error:', error.message);

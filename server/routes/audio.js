@@ -1,5 +1,6 @@
 const express = require('express');
 const multer = require('multer');
+const authMiddleware = require('../middleware/auth');
 const { SpeechClient } = require('@google-cloud/speech');
 const { Storage } = require('@google-cloud/storage');
 
@@ -20,7 +21,7 @@ const speechClient = new SpeechClient({
 });
 
 // Transcribe endpoint
-router.post('/transcribe', async (req, res) => {
+router.post('/transcribe', authMiddleware, async (req, res) => {
   try {
     const { audioUri } = req.body;
 
@@ -51,33 +52,38 @@ router.post('/transcribe', async (req, res) => {
 });
 
 // Upload audio endpoint
-router.post('/upload-audio', upload.single('audio'), async (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).send('No file uploaded.');
+router.post(
+  '/upload-audio',
+  authMiddleware,
+  upload.single('audio'),
+  async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).send('No file uploaded.');
+      }
+
+      const blob = bucket.file(req.file.originalname);
+      const blobStream = blob.createWriteStream({
+        resumable: false,
+        metadata: {
+          contentType: req.file.mimetype,
+        },
+      });
+
+      blobStream.on('error', (err) => {
+        res.status(500).send({ error: err.message });
+      });
+
+      blobStream.on('finish', () => {
+        const gsUri = `gs://${bucketName}/${blob.name}`;
+        res.status(200).send({ url: gsUri });
+      });
+
+      blobStream.end(req.file.buffer);
+    } catch (error) {
+      res.status(500).send({ error: error.message });
     }
-
-    const blob = bucket.file(req.file.originalname);
-    const blobStream = blob.createWriteStream({
-      resumable: false,
-      metadata: {
-        contentType: req.file.mimetype,
-      },
-    });
-
-    blobStream.on('error', (err) => {
-      res.status(500).send({ error: err.message });
-    });
-
-    blobStream.on('finish', () => {
-      const gsUri = `gs://${bucketName}/${blob.name}`;
-      res.status(200).send({ url: gsUri });
-    });
-
-    blobStream.end(req.file.buffer);
-  } catch (error) {
-    res.status(500).send({ error: error.message });
   }
-});
+);
 
 module.exports = router;

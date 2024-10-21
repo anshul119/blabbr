@@ -1,5 +1,6 @@
 const express = require('express');
 const OpenAI = require('openai');
+const authMiddleware = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -8,7 +9,7 @@ const openai = new OpenAI({
   apiKey: process.env['OPENAI_API_KEY'],
 });
 
-router.post('/', async (req, res) => {
+router.post('/', authMiddleware, async (req, res) => {
   try {
     const { url, transcript, story } = req.body;
     const [id] = await knex('stories').insert({ url, transcript, story });
@@ -18,7 +19,7 @@ router.post('/', async (req, res) => {
   }
 });
 
-router.get('/:id', async (req, res) => {
+router.get('/:id', authMiddleware, async (req, res) => {
   try {
     const { id } = req.params;
     const story = await knex('stories').where({ id }).first();
@@ -32,7 +33,7 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-router.put('/:id', async (req, res) => {
+router.put('/:id', authMiddleware, async (req, res) => {
   try {
     const { id } = req.params;
     const { url, transcript, story } = req.body;
@@ -49,7 +50,7 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', authMiddleware, async (req, res) => {
   try {
     const { id } = req.params;
     const deleted = await knex('stories').where({ id }).del();
@@ -64,7 +65,7 @@ router.delete('/:id', async (req, res) => {
 });
 
 // Generate story endpoint
-router.post('/generate', async (req, res) => {
+router.post('/generate', authMiddleware, async (req, res) => {
   const { rawText } = req.body;
 
   try {
