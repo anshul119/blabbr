@@ -12,7 +12,13 @@ const openai = new OpenAI({
 router.post('/', authMiddleware, async (req, res) => {
   try {
     const { url, transcript, story } = req.body;
-    const [id] = await knex('stories').insert({ url, transcript, story });
+    const userId = req.user.userId; // Assuming authMiddleware adds user info to req
+    const [id] = await knex('stories').insert({
+      url,
+      transcript,
+      story,
+      user_id: userId,
+    });
     res.status(201).json({ id, url, transcript, story });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -22,11 +28,12 @@ router.post('/', authMiddleware, async (req, res) => {
 router.get('/:id', authMiddleware, async (req, res) => {
   try {
     const { id } = req.params;
-    const story = await knex('stories').where({ id }).first();
+    const userId = req.user.userId;
+    const story = await knex('stories').where({ id, user_id: userId }).first();
     if (story) {
       res.json(story);
     } else {
-      res.status(404).json({ error: 'Story not found' });
+      res.status(404).json({ error: 'Story not found or unauthorized' });
     }
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -36,14 +43,15 @@ router.get('/:id', authMiddleware, async (req, res) => {
 router.put('/:id', authMiddleware, async (req, res) => {
   try {
     const { id } = req.params;
+    const userId = req.user.userId;
     const { url, transcript, story } = req.body;
     const updated = await knex('stories')
-      .where({ id })
+      .where({ id, user_id: userId })
       .update({ url, transcript, story });
     if (updated) {
       res.json({ id, url, transcript, story });
     } else {
-      res.status(404).json({ error: 'Story not found' });
+      res.status(404).json({ error: 'Story not found or unauthorized' });
     }
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -53,12 +61,24 @@ router.put('/:id', authMiddleware, async (req, res) => {
 router.delete('/:id', authMiddleware, async (req, res) => {
   try {
     const { id } = req.params;
-    const deleted = await knex('stories').where({ id }).del();
+    const userId = req.user.userId;
+    const deleted = await knex('stories').where({ id, user_id: userId }).del();
     if (deleted) {
       res.json({ message: 'Story deleted successfully' });
     } else {
-      res.status(404).json({ error: 'Story not found' });
+      res.status(404).json({ error: 'Story not found or unauthorized' });
     }
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// New endpoint to get all stories for a user
+router.get('/', authMiddleware, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const stories = await knex('stories').where({ user_id: userId });
+    res.json(stories);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
